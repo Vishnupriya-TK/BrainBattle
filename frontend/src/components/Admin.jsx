@@ -74,6 +74,11 @@ const Admin = () => {
     ]);
   };
 
+  const removeQuestion = (idx) => {
+    if (questions.length === 1) return; // keep at least one
+    setQuestions(questions.filter((_, i) => i !== idx));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSuccess("");
@@ -240,6 +245,18 @@ const Admin = () => {
             <div className="space-y-6">
               {questions.map((q, idx) => (
                 <div key={idx} className="bg-pink-50 p-4 rounded-lg shadow-inner">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-semibold text-gray-700">Question {idx + 1}</span>
+                    {questions.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeQuestion(idx)}
+                        className="text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
                   <input
                     type="text"
                     placeholder={`Question ${idx + 1}`}
@@ -248,7 +265,7 @@ const Admin = () => {
                     className="w-full px-3 py-2 mb-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-300 transition"
                     required
                   />
-                  <div className="grid grid-cols-2 gap-2 mb-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
                     {q.options.map((opt, oIdx) => (
                       <input
                         key={oIdx}

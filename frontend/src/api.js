@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://brainbattle-backend-7y13.onrender.com/api';
 
 // Helper functions for role-specific localStorage
 function getToken(role = null) {

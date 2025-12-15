@@ -173,6 +173,11 @@ export async function getResults({ quizId, userId } = {}) {
   const params = [];
   if (quizId) params.push(`quizId=${quizId}`);
   if (userId) params.push(`userId=${userId}`);
+  // Additional filters (admin only typically)
+  if (arguments[0]?.name) params.push(`name=${encodeURIComponent(arguments[0].name)}`);
+  if (arguments[0]?.email) params.push(`email=${encodeURIComponent(arguments[0].email)}`);
+  if (arguments[0]?.minScore !== undefined) params.push(`minScore=${arguments[0].minScore}`);
+  if (arguments[0]?.maxScore !== undefined) params.push(`maxScore=${arguments[0].maxScore}`);
   if (params.length) url += `?${params.join('&')}`;
   
   try {
@@ -246,6 +251,52 @@ export async function getLeaderboard(quizId) {
   } catch (error) {
     console.error('Error fetching leaderboard:', error);
     return [];
+  }
+}
+
+// Update quiz (admin)
+export async function updateQuiz(id, data) {
+  const token = getToken('admin');
+  if (!token) return { error: 'No token found' };
+  try {
+    const res = await fetch(`${API_URL}/quizzes/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      return { error: err.message || 'Failed to update quiz' };
+    }
+    return res.json();
+  } catch (error) {
+    console.error('Error updating quiz:', error);
+    return { error: error.message || 'Network error while updating quiz' };
+  }
+}
+
+// Delete quiz (admin)
+export async function deleteQuiz(id) {
+  const token = getToken('admin');
+  if (!token) return { error: 'No token found' };
+  try {
+    const res = await fetch(`${API_URL}/quizzes/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      return { error: err.message || 'Failed to delete quiz' };
+    }
+    return res.json();
+  } catch (error) {
+    console.error('Error deleting quiz:', error);
+    return { error: error.message || 'Network error while deleting quiz' };
   }
 }
 

@@ -55,7 +55,7 @@ router.get('/', async (req, res) => {
 // Get results (admin can see all, users can see their own)
 router.get('/results', auth, async (req, res) => {
   try {
-    const { quizId, userId } = req.query;
+    const { quizId, userId, name, email, minScore, maxScore } = req.query;
     const filter = {};
     
     // If user is not admin, they can only see their own results
@@ -66,10 +66,12 @@ router.get('/results', auth, async (req, res) => {
     }
     
     if (quizId) filter.quiz = quizId;
+    if (minScore) filter.score = { ...(filter.score || {}), $gte: Number(minScore) };
+    if (maxScore) filter.score = { ...(filter.score || {}), $lte: Number(maxScore) };
     
-    console.log('Fetching results with filter:', filter);
+    console.log('Fetching results with filter:', filter, { name, email });
     
-    const results = await Result.find(filter)
+    let results = await Result.find(filter)
       .populate({
         path: 'user',
         select: 'name email',
@@ -81,6 +83,16 @@ router.get('/results', auth, async (req, res) => {
         model: 'Quiz'
       })
       .sort({ submittedAt: -1 }); // Sort by most recent first
+
+    // Apply name/email filters in-memory after population
+    if (name) {
+      const nameRegex = new RegExp(name, 'i');
+      results = results.filter(r => nameRegex.test(r.user?.name || ''));
+    }
+    if (email) {
+      const emailRegex = new RegExp(email, 'i');
+      results = results.filter(r => emailRegex.test(r.user?.email || ''));
+    }
     
     console.log(`Fetched ${results.length} results for user ${req.user.id}, role: ${req.user.role}`);
     console.log('Sample result:', results.length > 0 ? {
@@ -197,6 +209,30 @@ router.delete('/:id', auth, async (req, res) => {
     res.json({ message: 'Quiz deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+});
+
+// Update quiz (admin only)
+router.put('/:id', auth, async (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
+  try {
+    const { title, description, questions } = req.body;
+    const updates = {};
+    if (title !== undefined) updates.title = title;
+    if (description !== undefined) updates.description = description;
+    if (questions !== undefined) updates.questions = questions;
+
+    const quiz = await Quiz.findByIdAndUpdate(
+      req.params.id,
+      { $set: updates },
+      { new: true }
+    );
+
+    if (!quiz) return res.status(404).json({ message: 'Quiz not found' });
+    res.json({ message: 'Quiz updated successfully', quiz });
+  } catch (err) {
+    console.error('Error updating quiz:', err);
+    res.status(500).json({ message: err.message || 'Failed to update quiz' });
   }
 });
 

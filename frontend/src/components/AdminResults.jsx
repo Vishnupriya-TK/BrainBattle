@@ -21,6 +21,10 @@ const AdminResults = () => {
   const [results, setResults] = useState([]);
   const [quizzes, setQuizzes] = useState([]);
   const [quizId, setQuizId] = useState("");
+  const [nameFilter, setNameFilter] = useState("");
+  const [emailFilter, setEmailFilter] = useState("");
+  const [minScore, setMinScore] = useState("");
+  const [maxScore, setMaxScore] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -85,7 +89,13 @@ const AdminResults = () => {
 
   const handleFilter = (e) => {
     e.preventDefault();
-    fetchResults({ quizId });
+    fetchResults({
+      quizId,
+      name: nameFilter || undefined,
+      email: emailFilter || undefined,
+      minScore: minScore !== "" ? minScore : undefined,
+      maxScore: maxScore !== "" ? maxScore : undefined,
+    });
   };
 
   // Get top 3 results for selected quiz
@@ -131,32 +141,72 @@ const AdminResults = () => {
             )}
             
             {/* Quiz Filter */}
-            <div className="flex flex-wrap gap-4 mb-6">
+            <form className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6" onSubmit={handleFilter}>
               <select
                 value={quizId}
-                onChange={e => {
-                  const selectedQuizId = e.target.value;
-                  setQuizId(selectedQuizId);
-                  if (selectedQuizId) {
-                    fetchResults({ quizId: selectedQuizId });
-                  } else {
-                    fetchResults({});
-                  }
-                }}
-                className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 transition flex-1"
+                onChange={e => setQuizId(e.target.value)}
+                className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 transition"
               >
                 <option value="">All Quizzes</option>
                 {quizzes.map(q => (
                   <option key={q._id} value={q._id}>{q.title}</option>
                 ))}
               </select>
-              <button 
-                onClick={() => fetchResults(quizId ? { quizId } : {})}
-                className="px-6 py-2 bg-pink-600 text-white rounded-lg font-semibold hover:bg-pink-700 transition"
-              >
-                Refresh
-              </button>
-            </div>
+              <input
+                type="text"
+                placeholder="Filter by Name"
+                value={nameFilter}
+                onChange={(e) => setNameFilter(e.target.value)}
+                className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 transition"
+              />
+              <input
+                type="text"
+                placeholder="Filter by Email"
+                value={emailFilter}
+                onChange={(e) => setEmailFilter(e.target.value)}
+                className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 transition"
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="Min Score"
+                  value={minScore}
+                  onChange={(e) => setMinScore(e.target.value)}
+                  className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 transition"
+                />
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="Max Score"
+                  value={maxScore}
+                  onChange={(e) => setMaxScore(e.target.value)}
+                  className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 transition"
+                />
+              </div>
+              <div className="flex gap-2 col-span-1 md:col-span-2 lg:col-span-4">
+                <button 
+                  type="submit"
+                  className="px-6 py-2 bg-pink-600 text-white rounded-lg font-semibold hover:bg-pink-700 transition"
+                >
+                  Apply Filters
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuizId("");
+                    setNameFilter("");
+                    setEmailFilter("");
+                    setMinScore("");
+                    setMaxScore("");
+                    fetchResults({});
+                  }}
+                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition"
+                >
+                  Clear
+                </button>
+              </div>
+            </form>
 
             {loading ? (
               <div className="text-center">Loading...</div>

@@ -49,6 +49,7 @@ const Sidebar = () => {
         {role === "admin" ? (
           <>
             <Link to="/admin" className="py-2 px-4 rounded hover:bg-white/10 transition">Create Quiz</Link>
+            <Link to="/admin/quizzes" className="py-2 px-4 rounded hover:bg-white/10 transition">Manage Quizzes</Link>
             <Link to="/admin/results" className="py-2 px-4 rounded hover:bg-white/10 transition">Progress Tracker</Link>
             <div className="mt-2">
               <button

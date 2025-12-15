@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import Admin from "./components/Admin";
+import AdminManage from "./components/AdminManage";
 import Quiz from "./components/Quiz";
 import Score from "./components/Score";
 import AdminResults from "./components/AdminResults";
@@ -20,6 +21,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/admin/quizzes" element={<AdminManage />} />
         <Route path="/admin/results" element={<AdminResults />} />
         <Route path="/quiz" element={<Quiz />} />
         <Route path="/score" element={<Score />} />

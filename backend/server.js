@@ -6,7 +6,11 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
-app.use(cors());
+// app.use(cors());
+app.use(cors({
+  origin: 'https://brainbattle-nb8x.onrender.com', // your frontend URL
+  credentials: true // optional, needed if using cookies
+}));
 app.use(express.json());
 
 // Routes

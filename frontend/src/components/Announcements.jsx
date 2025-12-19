@@ -41,7 +41,8 @@ const Announcements = () => {
     try {
       const results = await getLeaderboard(quizId);
       // Get top 3
-      const topResults = Array.isArray(results) ? results.slice(0, 3) : [];
+      // const topResults = Array.isArray(results) ? results.slice(0, 3) : [];
+      const topResults = Array.isArray(results) ? results : [];
       setRankHolders(topResults);
       if (topResults.length === 0) {
         setError("No participants yet for this quiz.");

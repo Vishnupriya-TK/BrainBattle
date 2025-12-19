@@ -115,8 +115,8 @@ const Announcements = () => {
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  /* {rankHolders.map((result, index) => { */
-                {rankHolders.slice(0, 3).map((result, index) => {
+                
+                    {rankHolders.slice(0, 3).map((result, index) => {
 
                     const userName = result.user?.name || result.user || 'Anonymous';
                     const userEmail = result.user?.email || '-';

@@ -34,6 +34,16 @@ const Quiz = () => {
     }
     setError("");
     try {
+      // Try to enter fullscreen as soon as the user starts the quiz
+      try {
+        const docEl = document.documentElement;
+        if (docEl.requestFullscreen && !document.fullscreenElement) {
+          await docEl.requestFullscreen();
+        }
+      } catch (fsErr) {
+        console.warn("Fullscreen request failed:", fsErr);
+      }
+
       const res = await getQuiz(quizCode);
       if (res && res._id) {
         setQuiz(res);
@@ -153,6 +163,44 @@ const Quiz = () => {
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [quiz, showScore]);
+
+  // Auto-submit if user switches away from this tab/window
+  useEffect(() => {
+    if (!quiz || showScore) return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden" && !hasSubmitted) {
+        handleSubmitQuiz();
+      }
+    };
+
+    const handleWindowBlur = () => {
+      if (!hasSubmitted) {
+        handleSubmitQuiz();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleWindowBlur);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", handleWindowBlur);
+    };
+  }, [quiz, showScore, hasSubmitted, handleSubmitQuiz]);
+
+  // Exit fullscreen when quiz is finished or left
+  useEffect(() => {
+    return () => {
+      try {
+        if (document.fullscreenElement && document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      } catch (err) {
+        console.warn("Error exiting fullscreen:", err);
+      }
+    };
+  }, []);
 
   const formatTime = (totalSeconds) => {
     if (totalSeconds === null) return "";

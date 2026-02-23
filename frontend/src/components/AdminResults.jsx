@@ -165,8 +165,6 @@ const AdminResults = () => {
     const tableColumn = [
       "Name",
       "Email",
-      "User ID",
-      "Quiz",
       "Score",
       "Attended Qs",
       "Total Qs",
@@ -174,11 +172,8 @@ const AdminResults = () => {
     ];
 
     const tableRows = dataWithRank.map((r) => {
-      const quizTitle = r.quiz?.title || selectedQuiz?.title || r.quiz || "Quiz";
       const userName = r.user?.name || r.user || "Unknown";
       const userEmail = r.user?.email || "-";
-      const userId =
-        (r.user && (r.user._id || r.user.id)) || (typeof r.user === "string" ? r.user : "-");
       const score = r.score || 0;
       const totalQuestions =
         selectedQuiz?.questions?.length || r.quiz?.questions?.length || r.quiz?.questions || 0;
@@ -192,8 +187,6 @@ const AdminResults = () => {
       return [
         userName,
         userEmail,
-        String(userId),
-        quizTitle,
         `${score}`,
         `${attendedQuestions}`,
         `${totalQuestions || "N/A"}`,

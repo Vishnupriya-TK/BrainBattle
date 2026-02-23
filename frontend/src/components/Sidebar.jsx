@@ -54,21 +54,14 @@ const Sidebar = ({ disableNavigation = false }) => {
         <button
           type="button"
           onClick={() => setIsMobileOpen(!isMobileOpen)}
-          className="relative w-6 h-6 flex items-center justify-center focus:outline-none"
+          className="text-2xl focus:outline-none"
         >
           {isMobileOpen ? (
             // X mark when sidebar is open
-            <>
-              <span className="absolute w-6 h-0.5 bg-white rounded transform rotate-45">x</span>
-              <span className="absolute w-6 h-0.5 bg-white rounded transform -rotate-45"></span>
-            </>
+            <span>✕</span>
           ) : (
             // Hamburger when sidebar is closed
-            <div className="flex flex-col gap-1">
-              <span className="w-6 h-0.5 bg-white rounded"></span>
-              <span className="w-6 h-0.5 bg-white rounded"></span>
-              <span className="w-6 h-0.5 bg-white rounded"></span>
-            </div>
+            <span>☰</span>
           )}
         </button>
         <div className="text-lg font-bold">Quiz App</div>

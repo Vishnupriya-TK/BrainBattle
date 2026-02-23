@@ -59,7 +59,7 @@ const Sidebar = ({ disableNavigation = false }) => {
           {isMobileOpen ? (
             // X mark when sidebar is open
             <>
-              <span className="absolute w-6 h-0.5 bg-white rounded transform rotate-45"></span>
+              <span className="absolute w-6 h-0.5 bg-white rounded transform rotate-45">x</span>
               <span className="absolute w-6 h-0.5 bg-white rounded transform -rotate-45"></span>
             </>
           ) : (

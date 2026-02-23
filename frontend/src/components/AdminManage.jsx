@@ -4,7 +4,12 @@ import Sidebar from "./Sidebar";
 import UserHeader from "./UserHeader";
 import { getQuizzes, getQuiz, updateQuiz, deleteQuiz, getUser, getToken } from "../api";
 
-const blankQuestion = () => ({ question: "", options: ["", "", "", ""], answer: "" });
+const blankQuestion = () => ({
+  question: "",
+  options: ["", "", "", ""],
+  answer: "",
+  timeLimitSeconds: undefined,
+});
 
 const AdminManage = () => {
   const navigate = useNavigate();
@@ -47,6 +52,10 @@ const AdminManage = () => {
           question: q.question || "",
           options: q.options && q.options.length === 4 ? q.options : ["", "", "", ""],
           answer: q.answer || "",
+          timeLimitSeconds:
+            typeof q.timeLimitSeconds === "number" && !Number.isNaN(q.timeLimitSeconds)
+              ? q.timeLimitSeconds
+              : undefined,
         })),
       });
     } else {
@@ -59,10 +68,47 @@ const AdminManage = () => {
     const next = [...quiz.questions];
     if (key === "optionsIndex") {
       next[idx].options[value.index] = value.value;
+    } else if (key === "timeLimitSeconds") {
+      next[idx].timeLimitSeconds = value;
     } else {
       next[idx][key] = value;
     }
     setQuiz({ ...quiz, questions: next });
+  };
+
+  const updateQuestionTime = (idx, rawValue, unit) => {
+    if (!quiz) return;
+    const trimmed = String(rawValue || "").trim();
+    let seconds;
+    if (!trimmed) {
+      seconds = undefined;
+    } else {
+      const n = Number(trimmed);
+      if (!Number.isNaN(n) && n > 0) {
+        seconds = unit === "minutes" ? n * 60 : n;
+      }
+    }
+    updateQuestionField(idx, "timeLimitSeconds", seconds);
+  };
+
+  const applyQuestionTimeToAll = (sourceIdx) => {
+    if (!quiz) return;
+    const sourceSeconds = quiz.questions[sourceIdx]?.timeLimitSeconds;
+    const next = quiz.questions.map((q) => ({
+      ...q,
+      timeLimitSeconds: sourceSeconds,
+    }));
+    setQuiz({ ...quiz, questions: next });
+  };
+
+  const getTimeDisplay = (seconds) => {
+    if (typeof seconds !== "number" || Number.isNaN(seconds) || seconds <= 0) {
+      return { unit: "seconds", value: "" };
+    }
+    if (seconds % 60 === 0) {
+      return { unit: "minutes", value: String(seconds / 60) };
+    }
+    return { unit: "seconds", value: String(seconds) };
   };
 
   const addQuestion = () => {
@@ -244,6 +290,42 @@ const AdminManage = () => {
                         placeholder="Correct Answer"
                         className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-300 transition"
                       />
+                      {/* Per-question time limit */}
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <span className="text-xs font-semibold text-gray-700">
+                          Time Limit for this question
+                        </span>
+                        {(() => {
+                          const { unit, value } = getTimeDisplay(q.timeLimitSeconds);
+                          return (
+                            <>
+                              <input
+                                type="number"
+                                min="1"
+                                value={value}
+                                onChange={(e) => updateQuestionTime(idx, e.target.value, unit)}
+                                className="w-20 px-2 py-1 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-pink-300 transition"
+                                placeholder="e.g. 30"
+                              />
+                              <select
+                                value={unit}
+                                onChange={(e) => updateQuestionTime(idx, value, e.target.value)}
+                                className="px-2 py-1 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-pink-300 transition"
+                              >
+                                <option value="seconds">seconds</option>
+                                <option value="minutes">minutes</option>
+                              </select>
+                              <button
+                                type="button"
+                                onClick={() => applyQuestionTimeToAll(idx)}
+                                className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                              >
+                                Apply to all questions
+                              </button>
+                            </>
+                          );
+                        })()}
+                      </div>
                     </div>
                   ))}
                 </div>

@@ -52,11 +52,17 @@ const Quiz = () => {
         setScore(null);
         setShowScore(false);
         setAnswers([]);
-        if (res.timeLimitMinutes) {
-          setTimeLeft(res.timeLimitMinutes * 60);
-        } else {
-          setTimeLeft(null);
+
+        // Determine initial time for first question (per-question overrides quiz-level)
+        let initialSeconds = null;
+        const firstQ = res.questions && res.questions[0];
+        if (firstQ && typeof firstQ.timeLimitSeconds === "number" && !Number.isNaN(firstQ.timeLimitSeconds)) {
+          initialSeconds = firstQ.timeLimitSeconds;
+        } else if (res.timeLimitMinutes) {
+          initialSeconds = res.timeLimitMinutes * 60;
         }
+
+        setTimeLeft(initialSeconds);
         setHasSubmitted(false);
       } else {
         setError("Quiz not found. Please check the code and try again.");
@@ -84,8 +90,17 @@ const Quiz = () => {
       },
     ]);
     if (current < quiz.questions.length - 1) {
-      setCurrent(current + 1);
+      const nextIndex = current + 1;
+      setCurrent(nextIndex);
       setSelected(null);
+      const nextQ = quiz.questions[nextIndex];
+      let nextSeconds = null;
+      if (nextQ && typeof nextQ.timeLimitSeconds === "number" && !Number.isNaN(nextQ.timeLimitSeconds)) {
+        nextSeconds = nextQ.timeLimitSeconds;
+      } else if (quiz.timeLimitMinutes) {
+        nextSeconds = quiz.timeLimitMinutes * 60;
+      }
+      setTimeLeft(nextSeconds);
     } else {
       handleSubmitQuiz();
     }
@@ -135,23 +150,50 @@ const Quiz = () => {
     }
   };
 
-  // Countdown timer effect
+  // Countdown timer effect (per-question if available, otherwise quiz-level)
   useEffect(() => {
-    if (!quiz || !quiz.timeLimitMinutes || showScore) return;
-    if (timeLeft === null) return;
+    if (!quiz || showScore) return;
+    if (timeLeft === null || typeof timeLeft !== "number" || Number.isNaN(timeLeft)) return;
+
     if (timeLeft <= 0) {
       if (!hasSubmitted) {
-        // Auto-submit quiz when time is up
-        handleSubmitQuiz();
+        // When time for this question is up:
+        if (current < quiz.questions.length - 1) {
+          const currentQ = quiz.questions[current];
+          setAnswers((prev) => [
+            ...prev,
+            {
+              question: currentQ.question,
+              selected: selected || "",
+              correct: currentQ.answer,
+            },
+          ]);
+          const nextIndex = current + 1;
+          const nextQ = quiz.questions[nextIndex];
+          let nextSeconds = null;
+          if (nextQ && typeof nextQ.timeLimitSeconds === "number" && !Number.isNaN(nextQ.timeLimitSeconds)) {
+            nextSeconds = nextQ.timeLimitSeconds;
+          } else if (quiz.timeLimitMinutes) {
+            nextSeconds = quiz.timeLimitMinutes * 60;
+          }
+          setCurrent(nextIndex);
+          setSelected(null);
+          setTimeLeft(nextSeconds);
+        } else {
+          // Last question – auto-submit entire quiz
+          handleSubmitQuiz();
+        }
       }
       return;
     }
+
     const interval = setInterval(() => {
       setTimeLeft((prev) => (prev !== null ? prev - 1 : prev));
     }, 1000);
+
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quiz, timeLeft, showScore, hasSubmitted]);
+  }, [quiz, timeLeft, showScore, hasSubmitted, current, selected]);
 
   // Prevent accidental tab closing / page reload during quiz
   useEffect(() => {
@@ -297,7 +339,7 @@ const Quiz = () => {
         <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md animate-fade-in">
           <div className="mb-4 flex items-center justify-between text-gray-500">
             <div>Question {current + 1} of {quiz.questions.length}</div>
-            {quiz.timeLimitMinutes && (
+            {(timeLeft !== null) && (
               <div className="text-sm font-semibold text-red-500">
                 Time Left: {formatTime(timeLeft)}
               </div>

@@ -4,6 +4,8 @@ const questionSchema = new mongoose.Schema({
   question: { type: String, required: true },
   options: [{ type: String, required: true }],
   answer: { type: String, required: true },
+  // Optional time limit for this question in seconds
+  timeLimitSeconds: { type: Number },
 });
 
 const quizSchema = new mongoose.Schema({

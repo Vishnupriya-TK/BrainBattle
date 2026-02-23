@@ -58,10 +58,22 @@ const UserResults = () => {
     }
   };
 
+  const getTotalMarks = (quizLike) => {
+    const questions = quizLike?.questions;
+    if (!Array.isArray(questions) || questions.length === 0) return 0;
+    return questions.reduce((sum, q) => {
+      const marks =
+        typeof q.marks === "number" && !Number.isNaN(q.marks) && q.marks > 0
+          ? q.marks
+          : 1;
+      return sum + marks;
+    }, 0);
+  };
+
   return (
     <div className="flex">
       <Sidebar />
-      <div className="flex-1 ml-56 min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="flex-1 md:ml-56 ml-0 min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 pt-16 md:pt-4">
         <div className="max-w-4xl mx-auto">
           <UserHeader position="top" />
           <div className="bg-white p-8 rounded-xl shadow-2xl animate-fade-in">
@@ -79,7 +91,7 @@ const UserResults = () => {
               <div className="space-y-4">
                 {results.map(result => {
                   const quizTitle = result.quiz?.title || result.quiz || 'Quiz';
-                  const totalQuestions = result.quiz?.questions?.length || result.quiz?.questions || 0;
+                  const totalMarks = getTotalMarks(result.quiz);
                   const score = result.score || 0;
                   const submittedAt = result.submittedAt ? new Date(result.submittedAt) : new Date();
                   
@@ -97,7 +109,7 @@ const UserResults = () => {
                             {score}
                           </div>
                           <div className="text-sm text-gray-500">
-                            / {totalQuestions || 'N/A'}
+                            / {totalMarks || 'N/A'}
                           </div>
                         </div>
                       </div>
@@ -106,12 +118,12 @@ const UserResults = () => {
                           <div 
                             className="bg-purple-600 h-2.5 rounded-full transition-all"
                             style={{ 
-                              width: `${totalQuestions > 0 ? ((score / totalQuestions) * 100) : 0}%` 
+                              width: `${totalMarks > 0 ? ((score / totalMarks) * 100) : 0}%` 
                             }}
                           ></div>
                         </div>
                         <p className="text-sm text-gray-600 mt-2">
-                          {totalQuestions > 0 ? ((score / totalQuestions) * 100).toFixed(1) : 0}% Correct
+                          {totalMarks > 0 ? ((score / totalMarks) * 100).toFixed(1) : 0}% Correct
                         </p>
                       </div>
                     </div>

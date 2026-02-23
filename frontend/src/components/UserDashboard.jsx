@@ -79,10 +79,21 @@ const UserDashboard = () => {
   // Calculate average score percentage
   let averageScore = 0;
   if (results.length > 0) {
-    const totalScore = results.reduce((sum, r) => sum + r.score, 0);
-    const totalQuestions = results.reduce((sum, r) => sum + (r.quiz?.questions?.length || 0), 0);
-    if (totalQuestions > 0) {
-      averageScore = ((totalScore / totalQuestions) * 100).toFixed(1);
+    const totalScore = results.reduce((sum, r) => sum + (r.score || 0), 0);
+    const totalMarks = results.reduce((sum, r) => {
+      const questions = r.quiz?.questions;
+      if (!Array.isArray(questions) || questions.length === 0) return sum;
+      const quizMarks = questions.reduce((innerSum, q) => {
+        const marks =
+          typeof q.marks === "number" && !Number.isNaN(q.marks) && q.marks > 0
+            ? q.marks
+            : 1;
+        return innerSum + marks;
+      }, 0);
+      return sum + quizMarks;
+    }, 0);
+    if (totalMarks > 0) {
+      averageScore = ((totalScore / totalMarks) * 100).toFixed(1);
     }
   }
   
@@ -96,7 +107,7 @@ const UserDashboard = () => {
   return (
     <div className="flex">
       <Sidebar />
-      <div className="flex-1 ml-56 min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="flex-1 md:ml-56 ml-0 min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 pt-16 md:pt-4">
         <div className="max-w-6xl mx-auto">
           <UserHeader position="top" />
           <div className="bg-white p-8 rounded-xl shadow-2xl animate-fade-in">
@@ -155,7 +166,16 @@ const UserDashboard = () => {
                     <div className="space-y-3">
                       {recentResults.map(result => {
                         const quizTitle = result.quiz?.title || result.quiz || 'Quiz';
-                        const totalQuestions = result.quiz?.questions?.length || result.quiz?.questions || 0;
+                        const questions = result.quiz?.questions;
+                        const totalMarks = Array.isArray(questions) && questions.length > 0
+                          ? questions.reduce((sum, q) => {
+                              const marks =
+                                typeof q.marks === "number" && !Number.isNaN(q.marks) && q.marks > 0
+                                  ? q.marks
+                                  : 1;
+                              return sum + marks;
+                            }, 0)
+                          : 0;
                         const score = result.score || 0;
                         const submittedAt = result.submittedAt ? new Date(result.submittedAt) : new Date();
                         
@@ -170,10 +190,10 @@ const UserDashboard = () => {
                               </div>
                               <div className="text-right">
                                 <div className="text-xl font-bold text-blue-600">
-                                  {score} / {totalQuestions || 'N/A'}
+                                  {score} / {totalMarks || 'N/A'}
                                 </div>
                                 <div className="text-xs text-gray-500">
-                                  {totalQuestions > 0 ? ((score / totalQuestions) * 100).toFixed(0) : 0}%
+                                  {totalMarks > 0 ? ((score / totalMarks) * 100).toFixed(0) : 0}%
                                 </div>
                               </div>
                             </div>

@@ -68,10 +68,22 @@ const Announcements = () => {
 
   const selectedQuiz = quizzes.find(q => q._id === selectedQuizId);
 
+  const getTotalMarks = (quizLike) => {
+    const questions = quizLike?.questions;
+    if (!Array.isArray(questions) || questions.length === 0) return 0;
+    return questions.reduce((sum, q) => {
+      const marks =
+        typeof q.marks === "number" && !Number.isNaN(q.marks) && q.marks > 0
+          ? q.marks
+          : 1;
+      return sum + marks;
+    }, 0);
+  };
+
   return (
     <div className="flex">
       <Sidebar />
-      <div className="flex-1 ml-56 min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="flex-1 md:ml-56 ml-0 min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 pt-16 md:pt-4">
         <div className="max-w-6xl mx-auto">
           <UserHeader position="top" />
           <div className="bg-white p-8 rounded-xl shadow-2xl animate-fade-in">
@@ -118,7 +130,8 @@ const Announcements = () => {
                     const userName = result.user?.name || result.user || 'Anonymous';
                     const userEmail = result.user?.email || '-';
                     const score = result.score || 0;
-                    const totalQuestions = selectedQuiz?.questions?.length || result.quiz?.questions?.length || 0;
+                    const quizForMarks = selectedQuiz || result.quiz;
+                    const totalMarks = getTotalMarks(quizForMarks);
                     const submittedAt = result.submittedAt ? new Date(result.submittedAt) : new Date();
                     
                     return (
@@ -141,10 +154,10 @@ const Announcements = () => {
                         </div>
                         <div className="bg-white/20 rounded-lg p-3 mt-4">
                           <div className="text-3xl font-bold text-white">
-                            {score} / {totalQuestions || 'N/A'}
+                            {score} / {totalMarks || 'N/A'}
                           </div>
                           <div className="text-sm text-white/90 mt-1">
-                            {totalQuestions > 0 ? ((score / totalQuestions) * 100).toFixed(1) : 0}% Score
+                            {totalMarks > 0 ? ((score / totalMarks) * 100).toFixed(1) : 0}% Score
                           </div>
                         </div>
                         <div className="text-xs text-white/80 mt-2">
@@ -175,7 +188,8 @@ const Announcements = () => {
                             const userName = result.user?.name || result.user || 'Anonymous';
                             const userEmail = result.user?.email || '-';
                             const score = result.score || 0;
-                            const totalQuestions = selectedQuiz?.questions?.length || result.quiz?.questions?.length || 0;
+                            const quizForMarks = selectedQuiz || result.quiz;
+                            const totalMarks = getTotalMarks(quizForMarks);
                             const submittedAt = result.submittedAt ? new Date(result.submittedAt) : new Date();
                             
                             return (
@@ -186,7 +200,7 @@ const Announcements = () => {
                                 <td className="px-4 py-2">{userName}</td>
                                 <td className="px-4 py-2">{userEmail}</td>
                                 <td className="px-4 py-2 font-semibold">
-                                  {score} / {totalQuestions || 'N/A'}
+                                  {score} / {totalMarks || 'N/A'}
                                 </td>
                                 <td className="px-4 py-2">
                                   {submittedAt.toLocaleDateString()}

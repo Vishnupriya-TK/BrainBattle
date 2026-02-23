@@ -168,7 +168,7 @@ const AdminManage = () => {
   return (
     <div className="flex">
       <Sidebar />
-      <div className="flex-1 ml-56 min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="flex-1 md:ml-56 ml-0 min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 pt-16 md:pt-4">
         <div className="max-w-6xl mx-auto">
           <UserHeader position="top" />
 

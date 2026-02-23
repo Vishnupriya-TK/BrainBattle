@@ -257,7 +257,7 @@ const Quiz = () => {
     return (
       <div className="flex">
         <Sidebar />
-        <div className="flex-1 ml-56 min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="flex-1 md:ml-56 ml-0 min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4 pt-16 md:pt-4">
           <div className="w-full max-w-md mb-4">
             <UserHeader position="top" />
           </div>
@@ -295,7 +295,7 @@ const Quiz = () => {
     return (
       <div className="flex">
         <Sidebar />
-        <div className="flex-1 ml-56 min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="flex-1 md:ml-56 ml-0 min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4 pt-16 md:pt-4">
           <div className="w-full max-w-md mb-4">
             <UserHeader position="top" />
           </div>
@@ -349,7 +349,7 @@ const Quiz = () => {
   return (
     <div className="flex">
       <Sidebar disableNavigation={true} />
-      <div className="flex-1 ml-56 min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="flex-1 md:ml-56 ml-0 min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4 pt-16 md:pt-4">
         <div className="w-full max-w-md mb-4">
           <UserHeader position="top" />
         </div>

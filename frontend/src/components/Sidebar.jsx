@@ -8,6 +8,7 @@ const Sidebar = ({ disableNavigation = false }) => {
   const role = user?.role;
   const [showCreatedQuizzes, setShowCreatedQuizzes] = useState(false);
   const [createdQuizzes, setCreatedQuizzes] = useState([]);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   useEffect(() => {
     if (role === "admin") {
@@ -47,9 +48,30 @@ const Sidebar = ({ disableNavigation = false }) => {
   };
 
   return (
-    <div className="fixed top-0 left-0 h-full w-56 bg-gradient-to-b from-slate-800 to-slate-900 text-white flex flex-col shadow-xl z-10">
-      <div className="p-6 text-2xl font-bold text-center border-b border-white/20">Quiz App</div>
-      <nav className="flex-1 flex flex-col gap-2 p-4 overflow-y-auto">
+    <>
+      {/* Mobile top bar with hamburger */}
+      <div className="fixed top-0 left-0 right-0 h-12 bg-slate-900 text-white flex items-center justify-between px-4 shadow-md z-30 md:hidden">
+        <button
+          type="button"
+          onClick={() => setIsMobileOpen(!isMobileOpen)}
+          className="flex flex-col gap-1 focus:outline-none"
+        >
+          <span className="w-6 h-0.5 bg-white rounded"></span>
+          <span className="w-6 h-0.5 bg-white rounded"></span>
+          <span className="w-6 h-0.5 bg-white rounded"></span>
+        </button>
+        <div className="text-lg font-bold">Quiz App</div>
+      </div>
+
+      {/* Sidebar container */}
+      <div
+        className={`fixed top-0 left-0 h-full w-56 bg-gradient-to-b from-slate-800 to-slate-900 text-white flex flex-col shadow-xl z-40 transform transition-transform duration-200
+        ${isMobileOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
+      >
+        <div className="hidden md:block p-6 text-2xl font-bold text-center border-b border-white/20">
+          Quiz App
+        </div>
+        <nav className="flex-1 flex flex-col gap-2 p-4 overflow-y-auto mt-12 md:mt-0">
         {role === "admin" ? (
           <>
             {disableNavigation ? (
@@ -143,19 +165,20 @@ const Sidebar = ({ disableNavigation = false }) => {
             )}
           </>
         )}
-      </nav>
-      <button
-        onClick={handleLogout}
-        disabled={disableNavigation}
-        className={`m-4 py-2 px-4 rounded text-white font-semibold transition ${
-          disableNavigation
-            ? "bg-red-400 cursor-not-allowed opacity-60"
-            : "bg-red-500 hover:bg-red-600"
-        }`}
-      >
-        Logout
-      </button>
-    </div>
+        </nav>
+        <button
+          onClick={handleLogout}
+          disabled={disableNavigation}
+          className={`m-4 py-2 px-4 rounded text-white font-semibold transition ${
+            disableNavigation
+              ? "bg-red-400 cursor-not-allowed opacity-60"
+              : "bg-red-500 hover:bg-red-600"
+          }`}
+        >
+          Logout
+        </button>
+      </div>
+    </>
   );
 };
 

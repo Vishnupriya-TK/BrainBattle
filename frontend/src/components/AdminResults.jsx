@@ -126,6 +126,18 @@ const AdminResults = () => {
   const attendees = getAttendees();
   const selectedQuiz = quizzes.find(q => q._id === quizId);
 
+  const getTotalMarks = (quizLike) => {
+    const questions = quizLike?.questions;
+    if (!Array.isArray(questions) || questions.length === 0) return 0;
+    return questions.reduce((sum, q) => {
+      const marks =
+        typeof q.marks === "number" && !Number.isNaN(q.marks) && q.marks > 0
+          ? q.marks
+          : 1;
+      return sum + marks;
+    }, 0);
+  };
+
   const handleExportPdf = () => {
     const baseData = quizId ? attendees : results;
     if (!baseData || baseData.length === 0) return;
@@ -204,7 +216,7 @@ const AdminResults = () => {
   return (
     <div className="flex">
       <Sidebar />
-      <div className="flex-1 ml-56 min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="flex-1 md:ml-56 ml-0 min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 pt-16 md:pt-4">
         <div className="max-w-6xl mx-auto">
           <UserHeader position="top" />
           
@@ -313,7 +325,8 @@ const AdminResults = () => {
                         const userName = result.user?.name || result.user || 'Unknown';
                         const userEmail = result.user?.email || '-';
                         const score = result.score || 0;
-                        const totalQuestions = selectedQuiz?.questions?.length || result.quiz?.questions?.length || 0;
+                        const quizForMarks = selectedQuiz || result.quiz;
+                        const totalMarks = getTotalMarks(quizForMarks);
                         const submittedAt = result.submittedAt ? new Date(result.submittedAt) : new Date();
                         
                         return (
@@ -331,7 +344,7 @@ const AdminResults = () => {
                             <div className="text-xl font-bold">{userName}</div>
                             <div className="text-sm text-gray-600">{userEmail}</div>
                             <div className="text-2xl font-bold mt-2 text-pink-700">
-                              Score: {score} / {totalQuestions || 'N/A'}
+                              Score: {score} / {totalMarks || 'N/A'}
                             </div>
                             <div className="text-xs text-gray-500 mt-1">
                               {submittedAt.toLocaleString()}
@@ -370,6 +383,7 @@ const AdminResults = () => {
                                 const userEmail = r.user?.email || "-";
                                 const score = r.score || 0;
                                 const totalQuestions = selectedQuiz?.questions?.length || r.quiz?.questions?.length || 0;
+                                const totalMarks = getTotalMarks(selectedQuiz || r.quiz);
                                 const submittedAt = r.submittedAt ? new Date(r.submittedAt) : new Date();
                                 
                                 return (
@@ -377,7 +391,9 @@ const AdminResults = () => {
                                     <td className="px-4 py-2 font-bold">#{index + 1}</td>
                                     <td className="px-4 py-2">{userName}</td>
                                     <td className="px-4 py-2">{userEmail}</td>
-                                    <td className="px-4 py-2 font-semibold">{score}</td>
+                                    <td className="px-4 py-2 font-semibold">
+                                      {score} / {totalMarks || 'N/A'}
+                                    </td>
                                     <td className="px-4 py-2">{totalQuestions || 'N/A'}</td>
                                     <td className="px-4 py-2">{submittedAt.toLocaleString()}</td>
                                   </tr>
@@ -418,6 +434,7 @@ const AdminResults = () => {
                                 const userEmail = r.user?.email || "-";
                                 const score = r.score || 0;
                                 const totalQuestions = r.quiz?.questions?.length || r.quiz?.questions || 0;
+                                const totalMarks = getTotalMarks(r.quiz);
                                 const submittedAt = r.submittedAt ? new Date(r.submittedAt) : new Date();
                                 
                                 return (
@@ -425,7 +442,9 @@ const AdminResults = () => {
                                     <td className="px-4 py-2">{quizTitle}</td>
                                     <td className="px-4 py-2">{userName}</td>
                                     <td className="px-4 py-2">{userEmail}</td>
-                                    <td className="px-4 py-2 font-semibold">{score}</td>
+                                    <td className="px-4 py-2 font-semibold">
+                                      {score} / {totalMarks || 'N/A'}
+                                    </td>
                                     <td className="px-4 py-2">{totalQuestions || 'N/A'}</td>
                                     <td className="px-4 py-2">{submittedAt.toLocaleString()}</td>
                                   </tr>

@@ -11,6 +11,7 @@ const Admin = () => {
   const [editingQuiz, setEditingQuiz] = useState(null);
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
+  const [editTimeLimitMinutes, setEditTimeLimitMinutes] = useState("");
   const [listError, setListError] = useState("");
   
   useEffect(() => {
@@ -42,6 +43,7 @@ const Admin = () => {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [timeLimitMinutes, setTimeLimitMinutes] = useState("");
   const [questions, setQuestions] = useState([
     { question: "", options: ["", "", "", ""], answer: "" },
   ]);
@@ -84,13 +86,19 @@ const Admin = () => {
     setSuccess("");
     setError("");
     setQuizId("");
-    const res = await createQuiz({ title, description, questions });
+    const res = await createQuiz({
+      title,
+      description,
+      questions,
+      timeLimitMinutes: timeLimitMinutes ? Number(timeLimitMinutes) : undefined,
+    });
     if (res.quiz && res.quiz._id) {
       setSuccess("Quiz created successfully!");
       setQuizId(res.quiz.quizCode);
       setTitle("");
       setDescription("");
       setQuestions([{ question: "", options: ["", "", "", ""], answer: "" }]);
+      setTimeLimitMinutes("");
       fetchCreatedQuizzes();
     } else {
       setError(res.message || "Failed to create quiz");
@@ -101,6 +109,11 @@ const Admin = () => {
     setEditingQuiz(quiz);
     setEditTitle(quiz.title || "");
     setEditDescription(quiz.description || "");
+    setEditTimeLimitMinutes(
+      typeof quiz.timeLimitMinutes === "number" && !isNaN(quiz.timeLimitMinutes)
+        ? String(quiz.timeLimitMinutes)
+        : ""
+    );
   };
 
   const handleUpdate = async () => {
@@ -109,6 +122,9 @@ const Admin = () => {
       title: editTitle,
       description: editDescription,
       questions: editingQuiz.questions, // keep existing questions for now
+      timeLimitMinutes: editTimeLimitMinutes
+        ? Number(editTimeLimitMinutes)
+        : undefined,
     });
     if (res.error) {
       setListError(res.error);
@@ -198,6 +214,19 @@ const Admin = () => {
                   </div>
                   <div>
                     <label className="text-sm text-gray-600">Description</label>
+                <div>
+                  <label className="text-sm text-gray-600">
+                    Time Limit (minutes)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={editTimeLimitMinutes}
+                    onChange={(e) => setEditTimeLimitMinutes(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 transition"
+                    placeholder="Leave empty for no time limit"
+                  />
+                </div>
                     <input
                       type="text"
                       value={editDescription}
@@ -240,6 +269,14 @@ const Admin = () => {
               placeholder="Quiz Description"
               value={description}
               onChange={e => setDescription(e.target.value)}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 transition"
+            />
+            <input
+              type="number"
+              min="1"
+              placeholder="Time Limit (minutes)"
+              value={timeLimitMinutes}
+              onChange={(e) => setTimeLimitMinutes(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 transition"
             />
             <div className="space-y-6">

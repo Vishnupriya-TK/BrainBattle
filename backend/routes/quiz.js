@@ -22,7 +22,7 @@ function auth(req, res, next) {
 router.post('/', auth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
   try {
-    const { title, description, questions } = req.body;
+    const { title, description, questions, timeLimitMinutes } = req.body;
 
     // Generate a random 6-digit code
     const quizCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -32,7 +32,8 @@ router.post('/', auth, async (req, res) => {
       description,
       questions,
       quizCode,
-      createdBy: req.user.id
+      createdBy: req.user.id,
+      timeLimitMinutes: timeLimitMinutes || undefined,
     });
 
     await quiz.save();
@@ -218,11 +219,12 @@ router.delete('/:id', auth, async (req, res) => {
 router.put('/:id', auth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
   try {
-    const { title, description, questions } = req.body;
+    const { title, description, questions, timeLimitMinutes } = req.body;
     const updates = {};
     if (title !== undefined) updates.title = title;
     if (description !== undefined) updates.description = description;
     if (questions !== undefined) updates.questions = questions;
+    if (timeLimitMinutes !== undefined) updates.timeLimitMinutes = timeLimitMinutes;
 
     const quiz = await Quiz.findByIdAndUpdate(
       req.params.id,

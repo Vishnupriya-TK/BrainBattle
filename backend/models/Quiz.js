@@ -12,6 +12,8 @@ const quizSchema = new mongoose.Schema({
   questions: [questionSchema],
   quizCode: { type: String, required: true, unique: true }, // 6-digit code
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  // Time limit for the quiz in minutes (optional)
+  timeLimitMinutes: { type: Number },
 });
 
 module.exports = mongoose.model('Quiz', quizSchema);

@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import UserHeader from "./UserHeader";
 import { getResults, getQuizzes, getUser, getToken } from "../api";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 const AdminResults = () => {
   const navigate = useNavigate();
@@ -124,6 +126,52 @@ const AdminResults = () => {
   const attendees = getAttendees();
   const selectedQuiz = quizzes.find(q => q._id === quizId);
 
+  const handleExportPdf = () => {
+    const dataToExport = quizId ? attendees : results;
+    if (!dataToExport || dataToExport.length === 0) return;
+
+    const doc = new jsPDF();
+    const titleText = quizId
+      ? `Quiz Results - ${selectedQuiz?.title || "Quiz"}`
+      : "All Quiz Results";
+
+    doc.setFontSize(16);
+    doc.text(titleText, 14, 20);
+
+    const tableColumn = ["Quiz", "Name", "Email", "Score", "Total Qs", "Submitted At"];
+    const tableRows = dataToExport.map((r) => {
+      const quizTitle = r.quiz?.title || selectedQuiz?.title || r.quiz || "Quiz";
+      const userName = r.user?.name || r.user || "Unknown";
+      const userEmail = r.user?.email || "-";
+      const score = r.score || 0;
+      const totalQuestions =
+        selectedQuiz?.questions?.length || r.quiz?.questions?.length || r.quiz?.questions || 0;
+      const submittedAt = r.submittedAt
+        ? new Date(r.submittedAt).toLocaleString()
+        : "";
+
+      return [
+        quizTitle,
+        userName,
+        userEmail,
+        `${score}`,
+        `${totalQuestions || "N/A"}`,
+        submittedAt,
+      ];
+    });
+
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 28,
+    });
+
+    const fileNameBase = quizId
+      ? (selectedQuiz?.title || "quiz").replace(/\s+/g, "_").toLowerCase()
+      : "all_quizzes";
+    doc.save(`results_${fileNameBase}.pdf`);
+  };
+
   return (
     <div className="flex">
       <Sidebar />
@@ -141,7 +189,7 @@ const AdminResults = () => {
             )}
             
             {/* Quiz Filter */}
-            <form className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6" onSubmit={handleFilter}>
+            <form className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4" onSubmit={handleFilter}>
               <select
                 value={quizId}
                 onChange={e => setQuizId(e.target.value)}
@@ -207,6 +255,21 @@ const AdminResults = () => {
                 </button>
               </div>
             </form>
+
+            <div className="flex justify-end mb-6">
+              <button
+                type="button"
+                onClick={handleExportPdf}
+                disabled={(quizId ? attendees.length : results.length) === 0}
+                className={`px-6 py-2 rounded-lg font-semibold transition ${
+                  (quizId ? attendees.length : results.length) === 0
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-green-600 text-white hover:bg-green-700"
+                }`}
+              >
+                Export {quizId ? "Selected Quiz" : "All Results"} as PDF
+              </button>
+            </div>
 
             {loading ? (
               <div className="text-center">Loading...</div>

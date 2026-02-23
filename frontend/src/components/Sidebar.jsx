@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getQuizzes, getUser, clearAuth } from "../api";
 
-const Sidebar = () => {
+const Sidebar = ({ disableNavigation = false }) => {
   const navigate = useNavigate();
   const user = getUser();
   const role = user?.role;
@@ -31,6 +31,10 @@ const Sidebar = () => {
   };
 
   const handleLogout = () => {
+    if (disableNavigation) {
+      // Prevent logout while a quiz is in progress
+      return;
+    }
     // Only clear the current role's auth data
     if (role === 'admin') {
       clearAuth('admin');
@@ -48,9 +52,33 @@ const Sidebar = () => {
       <nav className="flex-1 flex flex-col gap-2 p-4 overflow-y-auto">
         {role === "admin" ? (
           <>
-            <Link to="/admin" className="py-2 px-4 rounded hover:bg-white/10 transition">Create Quiz</Link>
-            <Link to="/admin/quizzes" className="py-2 px-4 rounded hover:bg-white/10 transition">Manage Quizzes</Link>
-            <Link to="/admin/results" className="py-2 px-4 rounded hover:bg-white/10 transition">Progress Tracker</Link>
+            {disableNavigation ? (
+              <div className="py-2 px-4 rounded bg-white/5 opacity-60 cursor-not-allowed">
+                Create Quiz
+              </div>
+            ) : (
+              <Link to="/admin" className="py-2 px-4 rounded hover:bg-white/10 transition">
+                Create Quiz
+              </Link>
+            )}
+            {disableNavigation ? (
+              <div className="py-2 px-4 rounded bg-white/5 opacity-60 cursor-not-allowed">
+                Manage Quizzes
+              </div>
+            ) : (
+              <Link to="/admin/quizzes" className="py-2 px-4 rounded hover:bg-white/10 transition">
+                Manage Quizzes
+              </Link>
+            )}
+            {disableNavigation ? (
+              <div className="py-2 px-4 rounded bg-white/5 opacity-60 cursor-not-allowed">
+                Progress Tracker
+              </div>
+            ) : (
+              <Link to="/admin/results" className="py-2 px-4 rounded hover:bg-white/10 transition">
+                Progress Tracker
+              </Link>
+            )}
             <div className="mt-2">
               <button
                 onClick={() => setShowCreatedQuizzes(!showCreatedQuizzes)}
@@ -77,16 +105,53 @@ const Sidebar = () => {
           </>
         ) : (
           <>
-            <Link to="/quiz" className="py-2 px-4 rounded hover:bg-white/10 transition">Take Quiz</Link>
-            <Link to="/user/dashboard" className="py-2 px-4 rounded hover:bg-white/10 transition">Dashboard</Link>
-            <Link to="/user/results" className="py-2 px-4 rounded hover:bg-white/10 transition">My Results</Link>
-            <Link to="/user/announcements" className="py-2 px-4 rounded hover:bg-white/10 transition">Announcements</Link>
+            {disableNavigation ? (
+              <div className="py-2 px-4 rounded bg-white/5 opacity-60 cursor-not-allowed">
+                Take Quiz
+              </div>
+            ) : (
+              <Link to="/quiz" className="py-2 px-4 rounded hover:bg-white/10 transition">
+                Take Quiz
+              </Link>
+            )}
+            {disableNavigation ? (
+              <div className="py-2 px-4 rounded bg-white/5 opacity-60 cursor-not-allowed">
+                Dashboard
+              </div>
+            ) : (
+              <Link to="/user/dashboard" className="py-2 px-4 rounded hover:bg-white/10 transition">
+                Dashboard
+              </Link>
+            )}
+            {disableNavigation ? (
+              <div className="py-2 px-4 rounded bg-white/5 opacity-60 cursor-not-allowed">
+                My Results
+              </div>
+            ) : (
+              <Link to="/user/results" className="py-2 px-4 rounded hover:bg-white/10 transition">
+                My Results
+              </Link>
+            )}
+            {disableNavigation ? (
+              <div className="py-2 px-4 rounded bg-white/5 opacity-60 cursor-not-allowed">
+                Announcements
+              </div>
+            ) : (
+              <Link to="/user/announcements" className="py-2 px-4 rounded hover:bg-white/10 transition">
+                Announcements
+              </Link>
+            )}
           </>
         )}
       </nav>
       <button
         onClick={handleLogout}
-        className="m-4 py-2 px-4 bg-red-500 hover:bg-red-600 rounded text-white font-semibold transition"
+        disabled={disableNavigation}
+        className={`m-4 py-2 px-4 rounded text-white font-semibold transition ${
+          disableNavigation
+            ? "bg-red-400 cursor-not-allowed opacity-60"
+            : "bg-red-500 hover:bg-red-600"
+        }`}
       >
         Logout
       </button>

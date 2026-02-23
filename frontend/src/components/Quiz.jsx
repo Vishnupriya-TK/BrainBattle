@@ -23,6 +23,8 @@ const Quiz = () => {
   const [showScore, setShowScore] = useState(false);
   const [error, setError] = useState("");
   const [answers, setAnswers] = useState([]);
+  const [timeLeft, setTimeLeft] = useState(null); // in seconds
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   const handleFetchQuiz = async (e) => {
     e.preventDefault();
@@ -40,6 +42,12 @@ const Quiz = () => {
         setScore(null);
         setShowScore(false);
         setAnswers([]);
+        if (res.timeLimitMinutes) {
+          setTimeLeft(res.timeLimitMinutes * 60);
+        } else {
+          setTimeLeft(null);
+        }
+        setHasSubmitted(false);
       } else {
         setError("Quiz not found. Please check the code and try again.");
       }
@@ -75,6 +83,8 @@ const Quiz = () => {
 
   const handleSubmitQuiz = async () => {
     try {
+      if (hasSubmitted) return;
+      setHasSubmitted(true);
       setError("");
       const currentQ = quiz.questions[current];
       const finalAnswers = [
@@ -113,6 +123,44 @@ const Quiz = () => {
       console.error("Error submitting quiz:", err);
       setError("Failed to submit quiz. Please try again.");
     }
+  };
+
+  // Countdown timer effect
+  useEffect(() => {
+    if (!quiz || !quiz.timeLimitMinutes || showScore) return;
+    if (timeLeft === null) return;
+    if (timeLeft <= 0) {
+      if (!hasSubmitted) {
+        // Auto-submit quiz when time is up
+        handleSubmitQuiz();
+      }
+      return;
+    }
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => (prev !== null ? prev - 1 : prev));
+    }, 1000);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quiz, timeLeft, showScore, hasSubmitted]);
+
+  // Prevent accidental tab closing / page reload during quiz
+  useEffect(() => {
+    if (!quiz || showScore) return;
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [quiz, showScore]);
+
+  const formatTime = (totalSeconds) => {
+    if (totalSeconds === null) return "";
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const mm = String(minutes).padStart(2, "0");
+    const ss = String(seconds).padStart(2, "0");
+    return `${mm}:${ss}`;
   };
 
   if (!quiz) {
@@ -193,13 +241,20 @@ const Quiz = () => {
 
   return (
     <div className="flex">
-      <Sidebar />
+      <Sidebar disableNavigation={true} />
       <div className="flex-1 ml-56 min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
         <div className="w-full max-w-md mb-4">
           <UserHeader position="top" />
         </div>
         <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md animate-fade-in">
-          <div className="mb-4 text-gray-500">Question {current + 1} of {quiz.questions.length}</div>
+          <div className="mb-4 flex items-center justify-between text-gray-500">
+            <div>Question {current + 1} of {quiz.questions.length}</div>
+            {quiz.timeLimitMinutes && (
+              <div className="text-sm font-semibold text-red-500">
+                Time Left: {formatTime(timeLeft)}
+              </div>
+            )}
+          </div>
           <h2 className="text-2xl font-bold mb-6 text-purple-700">{quiz.questions[current].question}</h2>
           <div className="space-y-3 mb-6">
             {quiz.questions[current].options.map((option, idx) => (

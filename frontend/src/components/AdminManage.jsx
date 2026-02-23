@@ -83,6 +83,10 @@ const AdminManage = () => {
       title: quiz.title,
       description: quiz.description,
       questions: quiz.questions,
+      timeLimitMinutes:
+        typeof quiz.timeLimitMinutes === "number" && !isNaN(quiz.timeLimitMinutes)
+          ? quiz.timeLimitMinutes
+          : undefined,
     });
     if (res.error) {
       setError(res.error);
@@ -155,7 +159,7 @@ const AdminManage = () => {
 
             {selectedId && quiz && (
               <div className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-3">
+                <div className="grid md:grid-cols-3 gap-3">
                   <div>
                     <label className="text-sm text-gray-600">Title</label>
                     <input
@@ -166,6 +170,24 @@ const AdminManage = () => {
                   </div>
                   <div>
                     <label className="text-sm text-gray-600">Description</label>
+                  <div>
+                    <label className="text-sm text-gray-600">Time Limit (minutes)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={quiz.timeLimitMinutes ?? ""}
+                      onChange={(e) =>
+                        setQuiz({
+                          ...quiz,
+                          timeLimitMinutes: e.target.value
+                            ? Number(e.target.value)
+                            : undefined,
+                        })
+                      }
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 transition"
+                      placeholder="No time limit"
+                    />
+                  </div>
                     <input
                       value={quiz.description || ""}
                       onChange={(e) => setQuiz({ ...quiz, description: e.target.value })}

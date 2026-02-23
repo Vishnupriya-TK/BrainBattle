@@ -127,8 +127,20 @@ const AdminResults = () => {
   const selectedQuiz = quizzes.find(q => q._id === quizId);
 
   const handleExportPdf = () => {
-    const dataToExport = quizId ? attendees : results;
-    if (!dataToExport || dataToExport.length === 0) return;
+    const baseData = quizId ? attendees : results;
+    if (!baseData || baseData.length === 0) return;
+
+    // Attach rank to each row
+    let dataWithRank;
+    if (quizId) {
+      // Rank within selected quiz (by score descending)
+      const sorted = [...attendees].sort((a, b) => (b.score || 0) - (a.score || 0));
+      dataWithRank = sorted.map((r, index) => ({ ...r, _exportRank: index + 1 }));
+    } else {
+      // Global rank across all quizzes (by score descending)
+      const sorted = [...results].sort((a, b) => (b.score || 0) - (a.score || 0));
+      dataWithRank = sorted.map((r, index) => ({ ...r, _exportRank: index + 1 }));
+    }
 
     const doc = new jsPDF();
     const titleText = quizId
@@ -138,25 +150,42 @@ const AdminResults = () => {
     doc.setFontSize(16);
     doc.text(titleText, 14, 20);
 
-    const tableColumn = ["Quiz", "Name", "Email", "Score", "Total Qs", "Submitted At"];
-    const tableRows = dataToExport.map((r) => {
+    const tableColumn = [
+      "Name",
+      "Email",
+      "User ID",
+      "Quiz",
+      "Score",
+      "Attended Qs",
+      "Total Qs",
+      "Rank",
+    ];
+
+    const tableRows = dataWithRank.map((r) => {
       const quizTitle = r.quiz?.title || selectedQuiz?.title || r.quiz || "Quiz";
       const userName = r.user?.name || r.user || "Unknown";
       const userEmail = r.user?.email || "-";
+      const userId =
+        (r.user && (r.user._id || r.user.id)) || (typeof r.user === "string" ? r.user : "-");
       const score = r.score || 0;
       const totalQuestions =
         selectedQuiz?.questions?.length || r.quiz?.questions?.length || r.quiz?.questions || 0;
-      const submittedAt = r.submittedAt
-        ? new Date(r.submittedAt).toLocaleString()
-        : "";
+      const attendedQuestions = Array.isArray(r.answers)
+        ? r.answers.filter(
+            (a) => a && typeof a.selected === "string" && a.selected.trim() !== ""
+          ).length
+        : 0;
+      const rank = r._exportRank || "-";
 
       return [
-        quizTitle,
         userName,
         userEmail,
+        String(userId),
+        quizTitle,
         `${score}`,
+        `${attendedQuestions}`,
         `${totalQuestions || "N/A"}`,
-        submittedAt,
+        `${rank}`,
       ];
     });
 

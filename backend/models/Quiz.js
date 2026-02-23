@@ -6,6 +6,8 @@ const questionSchema = new mongoose.Schema({
   answer: { type: String, required: true },
   // Optional time limit for this question in seconds
   timeLimitSeconds: { type: Number },
+  // Optional marks for this question (default 1)
+  marks: { type: Number, default: 1 },
 });
 
 const quizSchema = new mongoose.Schema({

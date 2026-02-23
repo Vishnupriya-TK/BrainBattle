@@ -160,10 +160,16 @@ router.post('/:id/submit', auth, async (req, res) => {
       return res.status(400).json({ message: 'Answers are required' });
     }
     
-    // Calculate score
+    // Calculate score based on per-question marks (default 1)
     let score = 0;
+    const quizQuestions = quiz.questions || [];
     answers.forEach(ans => {
-      if (ans.selected === ans.correct) score++;
+      const idx = quizQuestions.findIndex(q => q.question === ans.question);
+      const question = idx >= 0 ? quizQuestions[idx] : null;
+      const marks = question && typeof question.marks === 'number' ? question.marks : 1;
+      if (ans.selected === ans.correct) {
+        score += marks;
+      }
     });
     
     // Check if user already submitted this quiz (optional - remove if you want to allow retakes)

@@ -69,6 +69,30 @@ const Admin = () => {
     setQuestions(updated);
   };
 
+  const updateQuestionMarks = (idx, rawValue) => {
+    const updated = [...questions];
+    const trimmed = String(rawValue || "").trim();
+    if (!trimmed) {
+      updated[idx].marks = undefined;
+    } else {
+      const n = Number(trimmed);
+      if (!Number.isNaN(n) && n > 0) {
+        updated[idx].marks = n;
+      }
+    }
+    setQuestions(updated);
+  };
+
+  const applyMarksToAll = (sourceIdx) => {
+    const sourceMarks = questions[sourceIdx]?.marks;
+    setQuestions((prev) =>
+      prev.map((q) => ({
+        ...q,
+        marks: sourceMarks,
+      }))
+    );
+  };
+
   const updateQuestionTime = (idx, rawValue, unit) => {
     const updated = [...questions];
     const trimmed = String(rawValue || "").trim();
@@ -131,7 +155,7 @@ const Admin = () => {
       setQuizId(res.quiz.quizCode);
       setTitle("");
       setDescription("");
-      setQuestions([{ question: "", options: ["", "", "", ""], answer: "" }]);
+      setQuestions([{ question: "", options: ["", "", "", ""], answer: "", timeLimitSeconds: undefined, marks: undefined }]);
       setTimeLimitMinutes("");
       fetchCreatedQuizzes();
     } else {
@@ -384,6 +408,27 @@ const Admin = () => {
                         </>
                       );
                     })()}
+                  </div>
+                  {/* Per-question marks */}
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-semibold text-gray-700">
+                      Marks for this question
+                    </span>
+                    <input
+                      type="number"
+                      min="1"
+                      value={q.marks ?? ""}
+                      onChange={(e) => updateQuestionMarks(idx, e.target.value)}
+                      className="w-20 px-2 py-1 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-pink-300 transition"
+                      placeholder="e.g. 1"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => applyMarksToAll(idx)}
+                      className="text-xs px-2 py-1 bg-purple-600 text-white rounded hover:bg-purple-700"
+                    >
+                      Apply marks to all
+                    </button>
                   </div>
                   <input
                     type="text"

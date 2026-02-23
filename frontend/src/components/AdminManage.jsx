@@ -9,6 +9,7 @@ const blankQuestion = () => ({
   options: ["", "", "", ""],
   answer: "",
   timeLimitSeconds: undefined,
+  marks: undefined,
 });
 
 const AdminManage = () => {
@@ -55,6 +56,10 @@ const AdminManage = () => {
           timeLimitSeconds:
             typeof q.timeLimitSeconds === "number" && !Number.isNaN(q.timeLimitSeconds)
               ? q.timeLimitSeconds
+              : undefined,
+          marks:
+            typeof q.marks === "number" && !Number.isNaN(q.marks)
+              ? q.marks
               : undefined,
         })),
       });
@@ -290,6 +295,20 @@ const AdminManage = () => {
                         placeholder="Correct Answer"
                         className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-300 transition"
                       />
+                      {/* Per-question marks */}
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <span className="text-xs font-semibold text-gray-700">
+                          Marks for this question
+                        </span>
+                        <input
+                          type="number"
+                          min="1"
+                          value={q.marks ?? ""}
+                          onChange={(e) => updateQuestionField(idx, "marks", Number(e.target.value) || undefined)}
+                          className="w-20 px-2 py-1 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-pink-300 transition"
+                          placeholder="e.g. 1"
+                        />
+                      </div>
                       {/* Per-question time limit */}
                       <div className="mt-2 flex flex-wrap items-center gap-2">
                         <span className="text-xs font-semibold text-gray-700">

@@ -301,8 +301,25 @@ const Quiz = () => {
           </div>
           <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md animate-fade-in text-center">
             <h2 className="text-3xl font-bold mb-6 text-purple-700">Quiz Complete!</h2>
-            <p className="text-xl mb-2">Quiz: <span className="font-bold text-purple-600">{quiz.title}</span></p>
-            <p className="text-xl mb-6">Your Score: <span className="font-bold text-purple-600">{score} / {quiz.questions.length}</span></p>
+            <p className="text-xl mb-2">
+              Quiz: <span className="font-bold text-purple-600">{quiz.title}</span>
+            </p>
+            <p className="text-xl mb-6">
+              {(() => {
+                const totalMarks = (quiz.questions || []).reduce(
+                  (sum, q) => sum + (typeof q.marks === "number" && !Number.isNaN(q.marks) ? q.marks : 1),
+                  0
+                );
+                return (
+                  <>
+                    Your Score:{" "}
+                    <span className="font-bold text-purple-600">
+                      {score} / {totalMarks}
+                    </span>
+                  </>
+                );
+              })()}
+            </p>
             <button
               onClick={() => navigate("/user/results")}
               className="w-full py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition mb-2"
